@@ -1,0 +1,85 @@
+<button onclick="myFunction()">RESET</button>
+
+    
+
+    <script>
+        function myFunction() {
+            location.reload();
+        }
+    </script>
+<button onclick="completePolygon()">COMPLETE</button>
+
+<script type="module">
+
+import * as THREE from 'https://cdn.skypack.dev/three@0.129.0';
+
+const renderer = new THREE.WebGLRenderer();
+renderer.setSize( window.innerWidth, window.innerHeight );
+document.body.appendChild( renderer.domElement );
+
+const camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 500 );
+camera.position.set( 0, 0, 100 );
+camera.lookAt( 0, 0, 0 );
+
+const scene = new THREE.Scene();
+const material = new THREE.LineBasicMaterial( { color: 0xffffff } );
+
+/****************/
+var startPointSet = false;
+document.onmousedown = click;
+var startingPoint;
+
+var points = [];	
+function click(event) {
+
+	if (event.button == 0) { 
+	
+		if(event.clientY < 30) 
+		{
+			return;
+		}
+						  
+		
+			
+		var vec = new THREE.Vector3();
+		var pos = new THREE.Vector3();
+		vec.set( ( event.clientX / window.innerWidth ) * 2 - 1,- ( event.clientY / window.innerHeight ) * 2 + 1,0.5 );
+		vec.unproject( camera );
+		vec.sub( camera.position ).normalize();
+		var distance = - camera.position.z / vec.z;
+		pos.copy( camera.position ).add( vec.multiplyScalar( distance ) );
+
+		
+		if(startPointSet == false)
+		{		
+			startingPoint = new THREE.Vector3(  pos.x, pos.y, 0 );
+			points.push( startingPoint );		
+			startPointSet = true;
+			return;
+		}
+		points.push( new THREE.Vector3(  pos.x, pos.y, 0 ) );
+		const geometry = new THREE.BufferGeometry().setFromPoints( points );
+		const line = new THREE.Line( geometry, material );
+		scene.add( line );
+		renderer.render( scene, camera );
+		points = [];
+		points.push( new THREE.Vector3(  pos.x, pos.y, 0 ) );
+
+	}
+}
+
+
+window.completePolygon = function() {
+	
+	points.push(startingPoint);
+	const geometry = new THREE.BufferGeometry().setFromPoints( points );
+	const line = new THREE.Line( geometry, material );
+	scene.add( line );
+	renderer.render( scene, camera );	
+
+};
+	
+
+
+</script>
+
